@@ -3,7 +3,6 @@
 ## CMSC 471
 import os
 import sys
-from PIL import Image
 from skimage import io
 import numpy as np
 from sklearn import svm
@@ -33,6 +32,10 @@ def flatten_image(img):
 			current = current + col
 		current = current / (len(row))
 		imgData.append(current)
+	## shrink the image by getting the vertical average
+	#imgData = shrink_image(imgData)
+	## exponential
+	#imgData = [i ** 7 for i in imgData]
 	return imgData
 
 def shrink_image(img):
@@ -61,9 +64,6 @@ def get_train_set():
 		for image in images:
 			img = img_to_matrix(image)
 			img = flatten_image(img)
-			#img = shrink_image(img)
-			## exponential
-			#img = [i ** 7 for i in img]
 			current_set.append(img)
 		data.append(current_set)
 	## plot the data -- UNCOMMENT the line below to produce a graph
@@ -85,7 +85,7 @@ def plotData(data):
 	plt.legend((plots[0*len(data[0])],plots[1*len(data[1])],plots[2*len(data[2])],plots[3*len(data[3])],plots[4*len(data[4])]),("Smiley", "Hat", "Pound", "Heart", "Dollar"))
 	plt.show()
 
-## test set will only include images not used in the training set -- based on RECORDS variable
+## test set will only include images not used in the training set
 def test_set(clf):
 	img_dir = "./Images/Testing/"
 	train_sets = [img_dir+ f for f in os.listdir(img_dir)]
@@ -96,9 +96,6 @@ def test_set(clf):
 		for image in images:
 			img = img_to_matrix(image)
 			img = flatten_image(img)
-			#img = shrink_image(img)
-			## exponential
-			#img = [i ** 7 for i in img]
 			prediction = clf.predict([img])
 			outResult = ""
 			if sets == prediction[0]:
@@ -134,7 +131,7 @@ def main(argv):
 		X = np.array(X)
 		train1.fit(X, y)
 		joblib.dump(train1, trainFile)
-	# test the train set with the images in the testing set -- UNCOMMENT to run with the test set
+	## test the train set with the images in the testing set -- UNCOMMENT to run with the test set
 	#test_set(train1)
 	
 	## get the image to test
@@ -147,13 +144,9 @@ def main(argv):
 			## convert the image to an array
 			testImage = img_to_matrix(argv[1])
 			testImage = flatten_image(testImage)
-			#testImage = shrink_image(testImage)
-			## exponential
-			#testImage = [i ** 7 for i in testImage]
 			# compare the image file with the training set
 			prediction = train1.predict([testImage])
 			print(imgType[prediction[0]])
 
 # the main driver of the program
 main(sys.argv)
-
