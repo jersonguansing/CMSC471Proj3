@@ -4,6 +4,7 @@
 import os
 import sys
 from skimage import io
+from skimage.transform import resize
 import numpy as np
 from sklearn import svm
 from sklearn.externals import joblib
@@ -15,6 +16,7 @@ imgType = ["Smile", "Hat", "Hash", "Heart", "Dollar"]
 ## open the image file and convert it to a matrix
 def img_to_matrix(filename):
 	imageFile = io.imread(filename)
+	imageFile = resize(imageFile, (100, 100))
 	img = []
 	for row in imageFile:
 		img += map(list, row)
@@ -108,14 +110,22 @@ def test_set(clf):
 		sets += 1
 	print("Correct: " + str(correct))
 	print("Incorrect: " + str(incorrect))
+	print("Accuracy: " + str(round((correct * 100) / float(correct + incorrect), 2) ) + "%")
 
 def main(argv):
 	# get the training set
-	trainFile = "train1.pkl"
-	#train1 = svm.SVC(kernel="rbf")
-	#train1 = svm.SVC(kernel="linear")
-	#train1 = svm.SVC(kernel="poly", degree=3)
-	train1 = KNeighborsClassifier()
+	classifiers = ["rbf", "linear", "poly", "kneighbor"]
+	clf = [ svm.SVC(kernel="rbf"), svm.SVC(kernel="linear"), svm.SVC(kernel="poly", degree=3), KNeighborsClassifier() ]
+	# K neighbors is the default because it is giving the highest accuracy
+	whichClf = 3
+	if len(argv) >= 3:
+		whichClf = [i for i in range(0, len(classifiers)) if classifiers[i] == argv[2]]
+		if len(whichClf) > 0:
+			whichClf = whichClf[0]
+		else:
+			whichClf = 3
+	trainFile = classifiers[whichClf] + ".pkl"
+	train1 = clf[whichClf]
 	if os.path.isfile(trainFile):
 		train1 = joblib.load(trainFile) 
 	else:
@@ -135,7 +145,7 @@ def main(argv):
 	#test_set(train1)
 	
 	## get the image to test
-	if len(argv) != 2:
+	if len(argv) < 2:
 		print("The program takes a single argument, the filepath to a jpg.")
 	else:
 		if not os.path.isfile(argv[1]):
